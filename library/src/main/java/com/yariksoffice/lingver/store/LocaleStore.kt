@@ -31,6 +31,6 @@ import java.util.*
  *  Interface to be used by [Lingver] for storing a Locale.
  */
 interface LocaleStore {
-    fun getLocale(): Locale
-    fun persistLocale(locale: Locale)
+    fun getLocale(): Locale?
+    fun persistLocale(locale: Locale?)
 }

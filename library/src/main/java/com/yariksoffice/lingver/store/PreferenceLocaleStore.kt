@@ -34,12 +34,12 @@ import java.util.*
  */
 class PreferenceLocaleStore @JvmOverloads constructor(
         context: Context,
-        private val defaultLocale: Locale = Locale.getDefault(),
+        private val defaultLocale: Locale? = null,
         preferenceName: String = DEFAULT_PREFERENCE_NAME) : LocaleStore {
 
     private val prefs = context.getSharedPreferences(preferenceName, Context.MODE_PRIVATE)
 
-    override fun getLocale(): Locale {
+    override fun getLocale(): Locale? {
         // there is no predefined way to serialize/deserialize Locale object
         return if (!prefs.getString(LANGUAGE_KEY, null).isNullOrBlank()) {
             val json = JSONObject(prefs.getString(LANGUAGE_KEY, null)!!)
@@ -52,7 +52,12 @@ class PreferenceLocaleStore @JvmOverloads constructor(
         }
     }
 
-    override fun persistLocale(locale: Locale) {
+    override fun persistLocale(locale: Locale?) {
+        if (locale == null) {
+            prefs.edit().remove(LANGUAGE_KEY).apply()
+            return
+        }
+
         val json = JSONObject().apply {
             put(LANGUAGE_JSON_KEY, locale.language)
             put(COUNTRY_JSON_KEY, locale.country)

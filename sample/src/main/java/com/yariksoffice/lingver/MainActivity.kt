@@ -57,7 +57,15 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, WebViewActivity::class.java))
         }
         findViewById<View>(R.id.settings).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+            startActivityForResult(Intent(this, SettingsActivity::class.java), 101)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 101) {
+            recreate()
+        } else {
+            super.onActivityResult(requestCode, resultCode, data)
         }
     }
 

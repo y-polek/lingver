@@ -34,11 +34,11 @@ import java.util.*
  */
 class InMemoryLocaleStore() : LocaleStore {
 
-    private var locale: Locale = Locale.getDefault();
+    private var locale: Locale? = Locale.getDefault()
 
-    override fun getLocale(): Locale = locale
+    override fun getLocale(): Locale? = locale
 
-    override fun persistLocale(locale: Locale) {
+    override fun persistLocale(locale: Locale?) {
         this.locale = locale
     }
 }

@@ -64,7 +64,7 @@ class Lingver private constructor(private val store: LocaleStore) {
      * <p>Note that you need to update all already fetched locale-based data manually.
      * [Lingver] is not responsible for that.
      */
-    fun setLocale(context: Context, locale: Locale) {
+    fun setLocale(context: Context, locale: Locale?) {
         store.persistLocale(locale)
         update(context, locale)
     }
@@ -72,7 +72,7 @@ class Lingver private constructor(private val store: LocaleStore) {
     /**
      * Returns the active [Locale].
      */
-    fun getLocale(): Locale {
+    fun getLocale(): Locale? {
         return store.getLocale()
     }
 
@@ -83,7 +83,7 @@ class Lingver private constructor(private val store: LocaleStore) {
      * to "he", "yi", and "id", respectively.
      */
     fun getLanguage(): String {
-        return verifyLanguage(getLocale().language)
+        return verifyLanguage(getLocale()?.language.orEmpty())
     }
 
     private fun verifyLanguage(language: String): String {
@@ -105,7 +105,7 @@ class Lingver private constructor(private val store: LocaleStore) {
         update(context, store.getLocale())
     }
 
-    private fun update(context: Context, locale: Locale) {
+    private fun update(context: Context, locale: Locale?) {
         updateResources(context, locale)
         val appContext = context.applicationContext
         if (appContext !== context) {
@@ -114,34 +114,37 @@ class Lingver private constructor(private val store: LocaleStore) {
     }
 
     @Suppress("DEPRECATION")
-    private fun updateResources(context: Context, locale: Locale) {
-        Locale.setDefault(locale)
+    private fun updateResources(context: Context, locale: Locale?) {
+        val newLocale = locale ?: Resources.getSystem().configuration.locale
+
+        Locale.setDefault(newLocale)
 
         val res = context.resources
-        val current = res.configuration.getLocaleCompat()
-
-        if (current == locale) return
 
         val config = Configuration(res.configuration)
         when {
             isAtLeastSdkVersion(VERSION_CODES.N) -> setLocaleForApi24(config, locale)
-            isAtLeastSdkVersion(VERSION_CODES.JELLY_BEAN_MR1) -> config.setLocale(locale)
-            else -> config.locale = locale
+            isAtLeastSdkVersion(VERSION_CODES.JELLY_BEAN_MR1) -> config.setLocale(newLocale)
+            else -> config.locale = newLocale
         }
         res.updateConfiguration(config, res.displayMetrics)
     }
 
     @SuppressLint("NewApi")
-    private fun setLocaleForApi24(config: Configuration, locale: Locale) {
-        // bring the target locale to the front of the list
-        val set = linkedSetOf(locale)
+    private fun setLocaleForApi24(config: Configuration, locale: Locale?) {
+        if (locale == null) {
+            config.setLocales(Resources.getSystem().configuration.locales)
+        } else {
+            // bring the target locale to the front of the list
+            val set = linkedSetOf(locale)
 
-        val defaultLocales = LocaleList.getDefault()
-        val all = List<Locale>(defaultLocales.size()) { defaultLocales[it] }
-        // append other locales supported by the user
-        set.addAll(all)
+            val defaultLocales = LocaleList.getDefault()
+            val all = List<Locale>(defaultLocales.size()) { defaultLocales[it] }
+            // append other locales supported by the user
+            set.addAll(all)
 
-        config.setLocales(LocaleList(*set.toTypedArray()))
+            config.setLocales(LocaleList(*set.toTypedArray()))
+        }
     }
 
     internal fun resetActivityTitle(activity: Activity) {
@@ -193,7 +196,7 @@ class Lingver private constructor(private val store: LocaleStore) {
          */
         @JvmStatic
         @JvmOverloads
-        fun init(application: Application, defaultLocale: Locale = Locale.getDefault()): Lingver {
+        fun init(application: Application, defaultLocale: Locale? = null): Lingver {
             return init(application, PreferenceLocaleStore(application, defaultLocale))
         }
 

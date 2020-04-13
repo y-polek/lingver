@@ -42,6 +42,9 @@ class SettingsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
 
+        findViewById<View>(R.id.system).setOnClickListener {
+            setSystemLocale()
+        }
         findViewById<View>(R.id.en).setOnClickListener {
             setNewLocale(LANGUAGE_ENGLISH, LANGUAGE_ENGLISH_COUNTRY)
         }
@@ -54,11 +57,12 @@ class SettingsActivity : BaseActivity() {
     }
 
     private fun setNewLocale(language: String, country: String) {
-        Lingver.getInstance().setLocale(this, language, country)
+        Lingver.getInstance().setLocale(this.applicationContext, language, country)
+        recreate()
+    }
 
-        val i = Intent(this, MainActivity::class.java)
-        startActivity(i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK))
-
-        Toast.makeText(this, "Activity restarted", Toast.LENGTH_SHORT).show()
+    private fun setSystemLocale() {
+        Lingver.getInstance().setLocale(this.applicationContext, null)
+        recreate()
     }
 }
