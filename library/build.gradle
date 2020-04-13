@@ -36,7 +36,7 @@ android {
         minSdkVersion 14
         targetSdkVersion 29
         versionCode 4
-        versionName versionMajor + "." + versionMinor + "." + versionPatch
+        versionName versionMajor + "." + versionMinor + "." + versionPatch + ".1"
     }
     // TODO replace with https://issuetracker.google.com/issues/72050365 once released.
     libraryVariants.all {
